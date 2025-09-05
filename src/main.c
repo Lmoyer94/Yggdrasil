@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "../limine/limine.h"
+#include "../../limine/limine.h"
 
 #include "math.h"
 #include "memory.h"
