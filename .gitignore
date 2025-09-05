@@ -8,3 +8,4 @@ iso_root/boot/limine/limine.conf
 bin/yggdrasil
 obj/src/main.c.d
 obj/src/main.c.o
+image.iso

@@ -64,7 +64,7 @@ static void rsod(const char* message)
     uint64_t x = (1280 / 2) - (message_pixels / 2);
     uint64_t y = (720 / 2)  - (8 / 2);
 
-    clear_screen(0xFF0000);
+    clear_screen(0xBE6400);
     draw_line(0, 0, 1279, 719, 0x000000);
     draw_line(0, 719, 1279, 0, 0x000000);
     draw_text(x, y, message, 0x000000);
