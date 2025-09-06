@@ -1,1 +1,1 @@
-qemu-system-x86_64 -bios ../OVMF.fd -vga std -boot d -cdrom image.iso -m 1024
+qemu-system-x86_64 -bios ../OVMF.fd -cpu host,+avx2,enforce -enable-kvm -vga std -boot d -cdrom image.iso -m 4G

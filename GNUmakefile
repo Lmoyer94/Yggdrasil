@@ -65,11 +65,10 @@ override CFLAGS += \
     -fdata-sections \
     -m64 \
     -march=x86-64 \
+    -mfpmath=sse \
     -mabi=sysv \
     -mno-80387 \
     -mno-mmx \
-    -mno-sse \
-    -mno-sse2 \
     -mno-red-zone \
     -mcmodel=kernel
 
@@ -131,7 +130,7 @@ obj/%.S.o: %.S GNUmakefile
 obj/%.asm.o: %.asm GNUmakefile
 	mkdir -p "$(dir $@)"
 	nasm $(NASMFLAGS) $< -o $@
-
+	
 # Remove object files and the final executable.
 .PHONY: clean
 clean:

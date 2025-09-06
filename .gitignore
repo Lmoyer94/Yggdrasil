@@ -9,3 +9,8 @@ bin/yggdrasil
 obj/src/main.c.d
 obj/src/main.c.o
 image.iso
+obj/src/fpu.c.d
+obj/src/fpu.c.o
+obj/src/sse_avx.asm.o
+obj/src/sse.asm.o
+.vscode/settings.json

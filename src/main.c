@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "../../limine/limine.h"
 
+#include "fpu.h"
 #include "math.h"
 #include "memory.h"
 #include "vga.h"
@@ -48,8 +49,8 @@ static void hcf(void) {
     }
 }
 
-
-static void rsod(const char* message)
+// Orangish screen of death. Synonymous with Window's blue screen of death.
+static void sod(const char* message)
 {
     uint64_t len = 0;
 
@@ -59,23 +60,17 @@ static void rsod(const char* message)
         len++;
     }
 
+    message = message-len;
+
     uint64_t message_pixels = len * 8;
 
-    uint64_t x = (1280 / 2) - (message_pixels / 2);
-    uint64_t y = (720 / 2)  - (8 / 2);
+    uint64_t x = (framebuffer->width / 2) - (message_pixels / 2);
+    uint64_t y = (framebuffer->height / 2)  - (8 / 2);
 
-    clear_screen(0xBE6400);
-    draw_line(0, 0, 1279, 719, 0x000000);
-    draw_line(0, 719, 1279, 0, 0x000000);
+    clear_screen(0xFFBE00);
     draw_text(x, y, message, 0x000000);
     hcf();
 }
-
-
-
-
-
-
 
 // If renaming kmain() to something else, make sure to change the linker script accordingly.
 void kmain(void) 
@@ -95,5 +90,9 @@ void kmain(void)
     // Fetch the first framebuffer.
     framebuffer = framebuffer_request.response->framebuffers[0];
 
-    rsod("Crashed!");
+    clear_screen(0x00FFFF);
+    draw_rect(0, framebuffer->height-65, framebuffer->width, 64, true, 0xFF00FF);
+
+    hcf();
+    return; //shouldn't reach this, but just in case...
 }
