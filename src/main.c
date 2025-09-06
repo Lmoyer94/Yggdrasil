@@ -3,9 +3,11 @@
 #include <stdbool.h>
 #include "../../limine/limine.h"
 
+#include "acpi.h"
 #include "fpu.h"
 #include "math.h"
 #include "memory.h"
+#include "panic.h"
 #include "vga.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
@@ -21,9 +23,18 @@ static volatile LIMINE_BASE_REVISION(3);
 // once or marked as used with the "used" attribute as done here.
 
 __attribute__((used, section(".limine_requests")))
-static volatile struct limine_framebuffer_request framebuffer_request = {
+static volatile struct limine_framebuffer_request framebuffer_request = 
+{
     .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0
+};
+
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_rsdp_request rsdp_request =
+{
+    .id = LIMINE_RSDP_REQUEST,
+    .revision = 1
 };
 
 // Finally, define the start and end markers for the Limine requests.
@@ -41,37 +52,6 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 // DO NOT remove or rename these functions, or stuff will eventually break!
 // They CAN be moved to a different .c file.
 
-
-// Halt and catch fire function.
-static void hcf(void) {
-    for (;;) {
-        asm ("hlt");
-    }
-}
-
-// Orangish screen of death. Synonymous with Window's blue screen of death.
-static void sod(const char* message)
-{
-    uint64_t len = 0;
-
-    while (*message)
-    {
-        message++;
-        len++;
-    }
-
-    message = message-len;
-
-    uint64_t message_pixels = len * 8;
-
-    uint64_t x = (framebuffer->width / 2) - (message_pixels / 2);
-    uint64_t y = (framebuffer->height / 2)  - (8 / 2);
-
-    clear_screen(0xFFBE00);
-    draw_text(x, y, message, 0x000000);
-    hcf();
-}
-
 // If renaming kmain() to something else, make sure to change the linker script accordingly.
 void kmain(void) 
 {
@@ -80,19 +60,39 @@ void kmain(void)
     {
         hcf();
     }
-
     // Ensure we got a framebuffer.
     if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) 
     {
         hcf();
     }
-
     // Fetch the first framebuffer.
     framebuffer = framebuffer_request.response->framebuffers[0];
 
-    clear_screen(0x00FFFF);
-    draw_rect(0, framebuffer->height-65, framebuffer->width, 64, true, 0xFF00FF);
 
-    hcf();
-    return; //shouldn't reach this, but just in case...
+    //check for RSDP
+    if (rsdp_request.response == NULL)
+    {
+        hcf();
+    }
+    else
+    {
+        rsdp_revision = rsdp_request.response->revision;
+        if (rsdp_revision == 0)
+        {
+            rsdp_t = (struct RSDP_t*)&rsdp_request.response->address;
+            xsdp_t = NULL;
+        }
+        else if (rsdp_revision >= 2)
+        {
+            rsdp_t = NULL;
+            xsdp_t = (struct XSDP_t*)&rsdp_request.response->address;
+        }
+
+        init_RSDP();
+    }
+
+    clear_screen(0x00FFFF);
+    draw_rect(0, framebuffer->height-65, framebuffer->width, 64, true, 0x000000);
+
+    kpanic("Yggdrasil encountered an unrecoverable error! Please wait while we reboot!");
 }
