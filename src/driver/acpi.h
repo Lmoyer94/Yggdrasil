@@ -1,10 +1,10 @@
 #ifndef _ACPI_H
 #define _ACPI_H
 
-#include "../../limine/limine.h"
+#include "../../../limine/limine.h"
 
-#include "memory.h"
-#include "panic.h"
+#include "../lib/string.h"
+#include "../util/util.h"
 
 uint64_t* rsdp_address;
 uint8_t rsdp_revision;

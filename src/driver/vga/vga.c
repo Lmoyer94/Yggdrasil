@@ -1,16 +1,34 @@
-#ifndef _VGA_H
-#define _VGA_H
+#include "../../lib/math.h"
+#include "../../lib/string.h"
+#include "../../lib/stdlib.h"
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include "../../limine/limine.h"
+#include "../../../../limine/limine.h"
 
-#include "math.h"
-#include "memory.h"
-#include "vga_font.h"
+#include "../../util/util.h"
+
+#include "data/fonts/eng/eng_8x8.h"
+#include "color.h"
+#include "vga.h"
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_framebuffer_request framebuffer_request = 
+{
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0
+};
 
 struct limine_framebuffer *framebuffer;
+
+void init_VGA()
+{
+    // Ensure we got a framebuffer.
+    if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) 
+    {
+        hcf();
+    }
+    // Fetch the first framebuffer.
+    framebuffer = framebuffer_request.response->framebuffers[0];
+}
 
 void draw_pixel(uint64_t x, uint64_t y, uint32_t color)
 {
@@ -18,7 +36,7 @@ void draw_pixel(uint64_t x, uint64_t y, uint32_t color)
     fb_ptr[(y * framebuffer->width) + x] = color;
 }
 
-void clear_screen(uint32_t color)
+void cls(uint32_t color)
 {
     for (uint32_t y = 0; y < framebuffer->height; y++)
     {
@@ -124,5 +142,3 @@ void draw_text(uint64_t x, uint64_t y, const char* str, uint32_t color)
         x += 8;
     }
 }
-
-#endif

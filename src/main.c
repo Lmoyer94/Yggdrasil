@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include "../../limine/limine.h"
 
-#include "acpi.h"
-#include "fpu.h"
-#include "math.h"
-#include "memory.h"
-#include "panic.h"
-#include "vga.h"
+#include "util/util.h"
+
+#include "fpu/fpu.h"
+#include "driver/acpi.h"
+#include "driver/vga/color.h"
+#include "driver/vga/vga.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -21,13 +21,6 @@ static volatile LIMINE_BASE_REVISION(3);
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent, _and_ they should be accessed at least
 // once or marked as used with the "used" attribute as done here.
-
-__attribute__((used, section(".limine_requests")))
-static volatile struct limine_framebuffer_request framebuffer_request = 
-{
-    .id = LIMINE_FRAMEBUFFER_REQUEST,
-    .revision = 0
-};
 
 
 __attribute__((used, section(".limine_requests")))
@@ -60,15 +53,8 @@ void kmain(void)
     {
         hcf();
     }
-    // Ensure we got a framebuffer.
-    if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) 
-    {
-        hcf();
-    }
-    // Fetch the first framebuffer.
-    framebuffer = framebuffer_request.response->framebuffers[0];
 
-
+/*
     //check for RSDP
     if (rsdp_request.response == NULL)
     {
@@ -90,9 +76,10 @@ void kmain(void)
 
         init_RSDP();
     }
+*/
 
-    clear_screen(0x00FFFF);
-    draw_rect(0, framebuffer->height-65, framebuffer->width, 64, true, 0x000000);
-
-    kpanic("Yggdrasil encountered an unrecoverable error! Please wait while we reboot!");
+    init_VGA();
+    cls(0x00FFFF);
+    draw_rect(0, framebuffer->height-65, framebuffer->width, 64, true, 0xFF00FF);
+    hcf();
 }
