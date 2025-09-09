@@ -2,7 +2,9 @@
     "files.associations": {
         "stdbool.h": "c",
         "math.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "limine.h": "c",
+        "limine_requests.h": "c"
     },
 
     "terminal.integrated.env.linux": {

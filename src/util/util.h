@@ -1,6 +1,8 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#include "../bootloader/limine_requests.h"
+
 #include "../driver/vga/vga.h"
 
 static void hcf(void) {

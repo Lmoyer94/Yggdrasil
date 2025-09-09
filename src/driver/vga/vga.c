@@ -2,20 +2,13 @@
 #include "../../lib/string.h"
 #include "../../lib/stdlib.h"
 
-#include "../../../../limine/limine.h"
+#include "../../bootloader/limine_requests.h"
 
 #include "../../util/util.h"
 
 #include "data/fonts/eng/eng_8x8.h"
 #include "color.h"
 #include "vga.h"
-
-__attribute__((used, section(".limine_requests")))
-static volatile struct limine_framebuffer_request framebuffer_request = 
-{
-    .id = LIMINE_FRAMEBUFFER_REQUEST,
-    .revision = 0
-};
 
 struct limine_framebuffer *framebuffer;
 
@@ -64,20 +57,37 @@ void draw_line(uint64_t x0, uint64_t y0, uint64_t x1, uint64_t y1, uint32_t colo
     }
 }
 
+void draw_horizontal_line(int x, int y, int length, uint32_t color)
+{
+    for (int i = 0; i < length; i++)
+    {
+        draw_pixel(x + i, y, color);
+    }
+}
+
+void draw_vertical_line(int x, int y, int length, uint32_t color)
+{
+    for (int i = 0; i < length; i++)
+    {
+        draw_pixel(x, y + i, color);
+    }
+}
+
 void draw_rect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, bool fill, uint32_t color)
 {
     if (!fill)
     {
-        draw_line(x, y, x+width, y, color);
-        draw_line(x, y+height, x+width, y+height, color);
-        draw_line(x, y, x, y+height, color);
-        draw_line(x+width, y, x+width, y+height, color);
+        draw_horizontal_line(x, y, width, color);
+        draw_horizontal_line(x, y+height, width, color);
+
+        draw_vertical_line(x, y, height, color);
+        draw_vertical_line(x+width, y, height, color);
     }
     else
     {
         for (uint64_t dy = y; dy < y+height; dy++)
         {
-            draw_line(x, dy, x+width, dy, color);
+            draw_horizontal_line(x, dy, width, color);
         }
     }
 }

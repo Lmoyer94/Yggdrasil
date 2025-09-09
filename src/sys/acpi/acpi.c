@@ -1,43 +1,29 @@
-#ifndef _ACPI_H
-#define _ACPI_H
+#include "acpi.h"
 
-#include "../../../limine/limine.h"
-
-#include "../lib/string.h"
-#include "../util/util.h"
-
-uint64_t* rsdp_address;
-uint8_t rsdp_revision;
-
-struct RSDP_t
-{
-    char Signature[8];
-    uint8_t Checksum;
-    char OEMID[6];
-    uint8_t Revision;
-    uint32_t RsdtAddress;
-} __attribute__ ((packed));
-
-struct XSDP_t
-{
-    char Signature[8];
-    uint8_t Checksum;
-    char OEMID[6];
-    uint8_t Revision;
-    uint32_t RsdtAddress;   //deprecated in version 2.0+
-
-    uint32_t Length;
-    uint64_t XsdtAddress;
-    uint8_t ExtendedChecksum;
-    uint8_t reserved[3];
-} __attribute__ ((packed));
-
-
-struct RSDP_t* rsdp_t;
-struct XSDP_t* xsdp_t;
+#include "../../bootloader/limine_requests.h"
+#include "../../util/util.h"
 
 void init_RSDP()
 {
+    if (rsdp_request.response == NULL)
+    {
+        hcf();
+    }
+    else
+    {
+        rsdp_revision = rsdp_request.response->revision;
+        if (rsdp_revision == 0)
+        {
+            rsdp_t = (struct RSDP_t*)&rsdp_request.response->address;
+            xsdp_t = NULL;
+        }
+        else if (rsdp_revision >= 2)
+        {
+            rsdp_t = NULL;
+            xsdp_t = (struct XSDP_t*)&rsdp_request.response->address;
+        }
+    }
+
     if (rsdp_revision == 0)
     {   
         if (memcmp(rsdp_t->Signature, "RSD PTR ", 8))
@@ -97,4 +83,13 @@ void init_RSDP()
     }
 }
 
-#endif
+
+void shutdown()
+{
+
+}
+
+void restart()
+{
+
+}
